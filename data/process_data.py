@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 
+#python process_data.py messages.csv categories.csv DisasterResponse.db
 
 def load_data(messages_filepath, categories_filepath):
     """Load message and category data
@@ -17,7 +18,7 @@ def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
 
-    df = pd.merge(messages,categories, on = 'id')
+    df = pd.merge(messages,categories,on = 'id')
     return df
 
 
@@ -32,11 +33,11 @@ def clean_data(df):
     """
 
     #split categories into separate category columns
-    categories = df['categories'].str.split(pat=':', expand = True)
+    categories = df['categories'].str.split(pat=';', expand = True)
 
     #rename columns 
-    row = categories.iloc[[1]]
-    category_colnames = [category_name.split('-')[0] for category_name in row.values[0]]
+    row = categories.iloc[0,:]
+    category_colnames = row.apply(lambda x: x[:-2])
     categories.columns = category_colnames
 
     # convert categories to 0 or 1
@@ -52,16 +53,16 @@ def clean_data(df):
     return df
 
 
-def save_data(df, database_filename):
+def save_data(df, database_filepath):
     """Saves the information into a database
 
     Args:
     df: dataframe with measages and cleaned categories info
     database_filename: SqLite database path
     """
-    engine = create_engine('sqlite:///'+ database_filename)
-    table_name = database_filename.replace(".db","") + "_table"
-    df.to_sql(table_name, engine, index=False, if_exists='replace')
+    engine = create_engine('sqlite:///'+ database_filepath)
+    table_name = 'DisasterResponse_table'
+    df.to_sql(table_name, engine, index=False, if_exists = 'replace')
 
 
 def main():
