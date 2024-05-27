@@ -40,7 +40,7 @@ def clean_data(df):
     category_colnames = row.apply(lambda x: x[:-2])
     categories.columns = category_colnames
 
-    # convert categories to 0 or 1
+    
     for column in categories:
         # set each value to be the last character of the string
         categories[column] = categories[column].str[-1]
@@ -49,6 +49,8 @@ def clean_data(df):
     
     df = df.drop('categories',axis=1)
     df = pd.concat([df,categories],axis=1)
+    # convert related column to binary
+    df['related'] = df['related'].replace(2, 1)
     df = df.drop_duplicates()
     return df
 
