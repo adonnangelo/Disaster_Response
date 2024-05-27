@@ -8,7 +8,8 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
+import joblib
 from sqlalchemy import create_engine
 
 
@@ -26,11 +27,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('DisasterResponse_table', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -42,6 +43,15 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    category_sums = df.iloc[:, 8:].sum()
+    cat_label = category_sums.index
+    cat_count = category_sums.values
+
+    df_direct = df[df['genre'] == 'direct']
+    directcategory_sums = df_direct.iloc[:, 8:].sum()
+    directcat_label = directcategory_sums.index
+    directcat_count = directcategory_sums.values
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -61,6 +71,46 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+
+        #graph #2 
+        {
+            'data': [
+                Bar(
+                    x= cat_label,
+                    y= cat_count
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
+                }
+            }
+        },
+
+        #graph#3
+        {
+            'data': [
+                Bar(
+                    x= directcat_label,
+                    y= directcat_count
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Direct Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
                 }
             }
         }
